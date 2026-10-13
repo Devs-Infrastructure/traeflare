@@ -1,0 +1,18 @@
+services:
+  traeflare:
+    image: ghcr.io/itspasha/traeflare:1.0.0
+    container_name: traeflare
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LOG_LEVEL: INFO
+      TRAEFIK_VERSION: "2"
+      CF_TOKEN: ${CF_TOKEN}
+      RC_TYPE: CNAME
+      TARGET_DOMAIN: host.example.org
+      DOMAIN1: example.org
+      DOMAIN1_ZONE_ID: ${DOMAIN1_ZONE_ID}
+      # DOCKER_HOST: tcp://socket-proxy:2375
+      # TRAEFIK_FILTER_LABEL: traefik.constraint
+      # TRAEFIK_FILTER: proxy-public
+    restart: unless-stopped

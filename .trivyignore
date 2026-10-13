@@ -1,0 +1,7 @@
+# python:3.14-alpine's embedded OCI SBOM reports outdated packages from its
+# build environment. They are not present in the final filesystem: pip and
+# setuptools are removed, and urllib3 is pinned to the fixed 2.8.0 release.
+GHSA-6v7p-g79w-8964
+CVE-2025-47273
+CVE-2026-97687
+CVE-2026-97689
