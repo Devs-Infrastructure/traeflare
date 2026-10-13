@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "0e23b2fcd1cb0bf677443da1c4022eda5e907148",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "draft": true,
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "Dockerfile"
+        }
+      ]
+    }
+  }
+}

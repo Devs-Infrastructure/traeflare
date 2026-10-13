@@ -1,6 +1,6 @@
 services:
   traeflare:
-    image: ghcr.io/itspasha/traeflare:1.0.0
+    image: ghcr.io/devs-infrastructure/traeflare:1
     container_name: traeflare
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

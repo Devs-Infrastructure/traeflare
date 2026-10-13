@@ -1,8 +1,8 @@
 # Traeflare
 
-[![GitHub release](https://img.shields.io/github/v/tag/itspasha/traeflare?style=flat-square)](https://github.com/itspasha/traeflare/releases/latest)
-[![Build](https://img.shields.io/github/actions/workflow/status/itspasha/traeflare/build.yml?branch=main&style=flat-square)](https://github.com/itspasha/traeflare/actions/workflows/build.yml)
-[![Container](https://img.shields.io/badge/ghcr.io-container-blue?logo=docker&style=flat-square)](https://github.com/itspasha/traeflare/pkgs/container/traeflare)
+[![GitHub release](https://img.shields.io/github/v/release/devs-infrastructure/traeflare?style=flat-square)](https://github.com/devs-infrastructure/traeflare/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/devs-infrastructure/traeflare/build.yml?branch=main&style=flat-square)](https://github.com/devs-infrastructure/traeflare/actions/workflows/build.yml)
+[![Container](https://img.shields.io/badge/ghcr.io-container-blue?logo=docker&style=flat-square)](https://github.com/devs-infrastructure/traeflare/pkgs/container/traeflare)
 
 Automatically creates or updates Cloudflare DNS records for services exposed by [Traefik](https://github.com/traefik/traefik).
 
@@ -13,7 +13,7 @@ This repository is the maintained home of the project beginning with version `1.
 ```yaml
 services:
   traeflare:
-    image: ghcr.io/itspasha/traeflare:1.0.0
+    image: ghcr.io/devs-infrastructure/traeflare:1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -33,13 +33,13 @@ The Docker socket grants extensive control over the host even when mounted read-
 Pull the published image:
 
 ```bash
-docker pull ghcr.io/itspasha/traeflare:1.0.0
+docker pull ghcr.io/devs-infrastructure/traeflare:1
 ```
 
 Or build it locally:
 
 ```bash
-docker build --build-arg VERSION=1.0.0 -t traeflare:1.0.0 .
+docker build --build-arg VERSION=dev -t traeflare:dev .
 ```
 
 Published images support `linux/amd64` and `linux/arm64`.
@@ -112,13 +112,26 @@ To use API-only discovery, set `ENABLE_DOCKER_POLL=FALSE`, `ENABLE_TRAEFIK_POLL=
 
 Mount a writable volume at `/logs` before selecting `FILE` or `BOTH`.
 
-## Security and releases
+## Releases
 
-Dependencies are pinned in [`requirements.txt`](requirements.txt). Every build scans the container for fixed high and critical vulnerabilities before publishing a multi-platform image to GHCR. Version tags such as `v1.0.0` publish `1.0.0` and `1.0`; builds from `main` publish `latest`.
+Releases use [Semantic Versioning](https://semver.org/) and are prepared automatically from Conventional Commit titles. Merging a `fix:` change proposes a patch, `feat:` proposes a minor, and a title such as `feat!:` proposes a major. Merge the automated release pull request when the accumulated changes are ready to ship.
+
+Each GitHub release includes generated notes, a standalone `traeflare-<version>` script, a source bundle with its pinned Python requirements, and `SHA256SUMS`. It also publishes a multi-platform image for `linux/amd64` and `linux/arm64` with four convenient tags:
+
+```text
+ghcr.io/devs-infrastructure/traeflare:1.2.3  # immutable release
+ghcr.io/devs-infrastructure/traeflare:1.2    # latest patch in the 1.2 line
+ghcr.io/devs-infrastructure/traeflare:1      # latest compatible major
+ghcr.io/devs-infrastructure/traeflare:latest # latest stable release
+```
+
+For reproducible deployments, pin the full version or image digest. Published images include an SBOM and signed build provenance; downloadable files have GitHub artifact attestations and SHA-256 checksums.
+
+Dependencies are pinned in [`requirements.txt`](requirements.txt). Pull requests and main-branch builds scan the container for fixed high and critical vulnerabilities, and releases are published only after the same scan passes.
 
 ## Support
 
-Use [GitHub Issues](https://github.com/itspasha/traeflare/issues) for reproducible bugs and [GitHub Discussions](https://github.com/itspasha/traeflare/discussions) for usage questions.
+Use [GitHub Issues](https://github.com/devs-infrastructure/traeflare/issues) for reproducible bugs and [GitHub Discussions](https://github.com/devs-infrastructure/traeflare/discussions) for usage questions.
 
 ## License
 

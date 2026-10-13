@@ -1,14 +1,16 @@
 FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
 
+# x-release-please-start-version
 ARG VERSION="1.0.0"
+# x-release-please-end
 
 LABEL org.opencontainers.image.title="Traeflare" \
       org.opencontainers.image.description="Automatically manage Cloudflare DNS records for services exposed by Traefik" \
       org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.source="https://github.com/itspasha/traeflare" \
-      org.opencontainers.image.url="https://github.com/itspasha/traeflare" \
+      org.opencontainers.image.source="https://github.com/devs-infrastructure/traeflare" \
+      org.opencontainers.image.url="https://github.com/devs-infrastructure/traeflare" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.authors="itspasha"
+      org.opencontainers.image.authors="Devs Infrastructure"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
