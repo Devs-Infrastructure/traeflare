@@ -1,11 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/Devs-Infrastructure/traeflare/compare/v1.0.0...v1.1.0) (2026-10-13)
-
-
-### Features
-
-* automate semver releases ([f77245a](https://github.com/Devs-Infrastructure/traeflare/commit/f77245a7c79ed989d045204b257d258871269118))
+> Current release notes are published on the [GitHub Releases page](https://github.com/devs-infrastructure/traeflare/releases).
 
 ## 1.0.0 - 2026-10-13
 

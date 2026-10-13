@@ -3,44 +3,17 @@ name: Release
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Existing v-prefixed release tag to rebuild (for example, v1.2.3)
-        required: false
-        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-main
   cancel-in-progress: false
 
 jobs:
-  release-please:
-    name: Prepare release
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    outputs:
-      created: ${{ steps.release.outputs.release_created }}
-      tag: ${{ steps.release.outputs.tag_name }}
-    steps:
-      - name: Update release pull request or create release
-        id: release
-        uses: googleapis/release-please-action@8b8fd2cc23b2e18957157a9d923d75aa0c6f6ad5 # v4
-
-  publish:
-    name: Publish ${{ needs.release-please.outputs.tag || inputs.tag }}
-    needs: release-please
-    if: >-
-      always() &&
-      (needs.release-please.outputs.created == 'true' ||
-      (github.event_name == 'workflow_dispatch' && inputs.tag != ''))
+  release:
+    name: Build and publish release
     runs-on: ubuntu-latest
     permissions:
       attestations: write
@@ -50,25 +23,20 @@ jobs:
       security-events: write
     env:
       IMAGE: ghcr.io/devs-infrastructure/traeflare
-      RELEASE_TAG: ${{ needs.release-please.outputs.tag || inputs.tag }}
     steps:
-      - name: Validate release tag
-        shell: bash
-        run: |
-          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Expected a SemVer tag prefixed with v; received: $RELEASE_TAG" >&2
-            exit 1
-          fi
-
-      - name: Verify GitHub release exists
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release view "$RELEASE_TAG" >/dev/null
-
-      - name: Check out release
+      - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+
+      - name: Calculate next SemVer
+        id: version
+        shell: bash
+        run: |
+          tag="$(.github/scripts/next-version.sh)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+          echo "Releasing $tag"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -90,9 +58,9 @@ jobs:
           images: ${{ env.IMAGE }}
           flavor: latest=true
           tags: |
-            type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }}
-            type=semver,pattern={{major}},value=${{ env.RELEASE_TAG }}
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ steps.version.outputs.tag }}
 
       - name: Build image for security scan
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -102,7 +70,7 @@ jobs:
           platforms: linux/amd64
           provenance: false
           tags: local/traeflare:scan
-          build-args: VERSION=${{ steps.metadata.outputs.version }}
+          build-args: VERSION=${{ steps.version.outputs.version }}
 
       - name: Scan release image
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
@@ -132,7 +100,7 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           annotations: ${{ steps.metadata.outputs.annotations }}
-          build-args: VERSION=${{ steps.metadata.outputs.version }}
+          build-args: VERSION=${{ steps.version.outputs.version }}
           provenance: mode=max
           sbom: true
 
@@ -145,10 +113,11 @@ jobs:
 
       - name: Package downloadable files
         shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          version="${RELEASE_TAG#v}"
-          bundle="traeflare-${version}"
+          bundle="traeflare-${VERSION}"
 
           mkdir -p "release-stage/${bundle}/examples" dist
           install -m 0755 install/usr/sbin/traeflare "release-stage/${bundle}/traeflare"
@@ -166,12 +135,13 @@ jobs:
         with:
           subject-path: dist/*
 
-      - name: Upload files to draft GitHub release
+      - name: Create GitHub release with generated notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$RELEASE_TAG" dist/* --clobber
-
-      - name: Publish GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release edit "$RELEASE_TAG" --draft=false --latest
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --generate-notes \
+            --latest

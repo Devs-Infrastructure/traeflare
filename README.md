@@ -114,7 +114,7 @@ Mount a writable volume at `/logs` before selecting `FILE` or `BOTH`.
 
 ## Releases
 
-Releases use [Semantic Versioning](https://semver.org/) and are prepared automatically from Conventional Commit titles. Merging a `fix:` change proposes a patch, `feat:` proposes a minor, and a title such as `feat!:` proposes a major. Merge the automated release pull request when the accumulated changes are ready to ship.
+Every merge to `main` publishes a release automatically. Version numbers follow [Semantic Versioning](https://semver.org/) from Conventional Commit titles: `feat!:` (or a `BREAKING CHANGE`) increments the major version, `feat:` increments the minor version, and every other merge increments the patch version. There is no separate release pull request.
 
 Each GitHub release includes generated notes, a standalone `traeflare-<version>` script, a source bundle with its pinned Python requirements, and `SHA256SUMS`. It also publishes a multi-platform image for `linux/amd64` and `linux/arm64` with four convenient tags:
 
@@ -125,7 +125,7 @@ ghcr.io/devs-infrastructure/traeflare:1      # latest compatible major
 ghcr.io/devs-infrastructure/traeflare:latest # latest stable release
 ```
 
-For reproducible deployments, pin the full version or image digest. Published images include an SBOM and signed build provenance; downloadable files have GitHub artifact attestations and SHA-256 checksums.
+Release notes are generated from the merged pull requests and published on the [GitHub Releases page](https://github.com/devs-infrastructure/traeflare/releases). For reproducible deployments, pin the full version or image digest. Published images include an SBOM and signed build provenance; downloadable files have GitHub artifact attestations and SHA-256 checksums.
 
 Dependencies are pinned in [`requirements.txt`](requirements.txt). Pull requests and main-branch builds scan the container for fixed high and critical vulnerabilities, and releases are published only after the same scan passes.
 
